@@ -5,6 +5,7 @@ import (
 	"io/ioutil"
 	"encoding/json"
 	"bytes"
+	"errors"
 )
 
 func (tinder *Tinder) Auth() error {
@@ -67,6 +68,46 @@ func (tinder *Tinder) UpdatePreferences(gender string, min_age int, max_age int,
 		return err
 	}
 	defer response.Body.Close()
+
+	return nil
+}
+
+func (tinder *Tinder) Ping(lat float32, lon float32) error {
+	GeoStruct := &Geo{
+		Lat: lat,
+		Lon: lon,
+	}
+	GeoData, err := json.Marshal(GeoStruct)
+	if err != nil {
+		return err
+	}
+
+	GeoReader := bytes.NewReader(GeoData)
+
+	req, err := http.NewRequest("POST", tinder.Host + "/user/ping", GeoReader)
+	if err != nil {
+		return err
+	}
+	req = tinder.SetRequiredHeaders(req)
+	response, err := tinder.Client.Do(req)
+	if err != nil {
+		return err
+	}
+	defer response.Body.Close()
+
+	data, err := ioutil.ReadAll(response.Body)
+	if err != nil {
+		return err
+	}
+	var GeoResp GeoResponse
+	err = json.Unmarshal(data, &GeoResp)
+	if err != nil {
+		return err
+	}
+
+	if len(GeoResp.Error) != 0 {
+		return errors.New(GeoResp.Error)
+	}
 
 	return nil
 }
