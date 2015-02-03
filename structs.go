@@ -24,3 +24,13 @@ type Profile struct {
 	Max_Distance	int	`json:"distance_filter"`
 	Bio		string	`json:"bio,omitempty"`
 }
+
+type Geo struct {
+	Lat	float32 `json:"lat"`
+	Lon	float32 `json:"lon"`
+}
+
+type GeoResponse struct {
+	Status  int    `json:"status"`
+	Error   string `json:"error,omitempty"`
+}
