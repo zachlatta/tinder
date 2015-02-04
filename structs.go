@@ -11,23 +11,32 @@ type Tinder struct {
 	Token     string
 	Headers   url.Values
 	Client    http.Client
+	Me        Me
 }
 
-type User struct {
+type Me struct {
 	Token string
+	User  struct {
+		Id             string `json:"_id"`
+		ApiToken       string `json:"api_token"`
+		Bio            string `json:"bio"`
+		FullName       string `json:"full_name"`
+		Name           string `json:"name"`
+		Discoverable   bool   `json:"discoverable"`
+	} `json:"user"`
 }
 
 type Profile struct {
-	Gender		int	`json:"gender"`
-	Min_Age		int	`json:"age_filter_min"`
-	Max_Age		int	`json:""age_filter_max`
-	Max_Distance	int	`json:"distance_filter"`
-	Bio		string	`json:"bio,omitempty"`
+	Gender          int	`json:"gender"`
+	Min_Age         int	`json:"age_filter_min"`
+	Max_Age         int	`json:""age_filter_max`
+	Max_Distance    int	`json:"distance_filter"`
+	Bio             string	`json:"bio,omitempty"`
 }
 
 type Geo struct {
-	Lat	float32 `json:"lat"`
-	Lon	float32 `json:"lon"`
+	Lat     float32 `json:"lat"`
+	Lon     float32 `json:"lon"`
 }
 
 type GeoResponse struct {

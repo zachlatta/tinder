@@ -21,14 +21,15 @@ func (tinder *Tinder) Auth() error {
 	if err != nil {
 		return err
 	}
-	var user User
-	err = json.Unmarshal(data, &user)
+	var me Me
+	err = json.Unmarshal(data, &me)
 	if err != nil {
 		return err
 	}
 	tinder.Headers.Del("facebook_token")
 	tinder.Headers.Del("facebook_id")
-	tinder.Token = user.Token
+	tinder.Token = me.Token
+	tinder.Me = me
 
 	return nil
 }
