@@ -6,6 +6,7 @@ import (
 	"encoding/json"
 	"bytes"
 	"errors"
+	"fmt"
 )
 
 func (tinder *Tinder) Auth() error {
@@ -108,6 +109,58 @@ func (tinder *Tinder) Ping(lat float32, lon float32) error {
 
 	if len(GeoResp.Error) != 0 {
 		return errors.New(GeoResp.Error)
+	}
+
+	return nil
+}
+
+func (tinder *Tinder) Report(Id string, Cause string) error {
+	var Cause_Id int
+	switch Cause {
+		case "spam":
+			Cause_Id = 1
+		case "offensive":
+			Cause_Id = 2
+		default:
+			return errors.New("Cause can only be spam or offensive")
+	}
+
+	ReportStruct := &Report{
+		Cause: Cause_Id,
+	}
+
+	ReportData, err := json.Marshal(ReportStruct)
+	if err != nil {
+		return err
+	}
+
+	ReportReader := bytes.NewReader(ReportData)
+
+	req, err := http.NewRequest("POST", tinder.Host + "/report/" + fmt.Sprintf("%s", Id), ReportReader)
+	if err != nil {
+		return err
+	}
+
+	req = tinder.SetRequiredHeaders(req)
+	response, err := tinder.Client.Do(req)
+	if err != nil {
+		return err
+	}
+	defer response.Body.Close()
+
+	data, err := ioutil.ReadAll(response.Body)
+	if err != nil {
+		return err
+	}
+
+	var ReportResp ReportResponse
+	err = json.Unmarshal(data, &ReportResp)
+	if err != nil {
+		return err
+	}
+
+	if len(ReportResp.Error) != 0 {
+		return errors.New(ReportResp.Error)
 	}
 
 	return nil

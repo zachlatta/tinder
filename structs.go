@@ -43,3 +43,12 @@ type GeoResponse struct {
 	Status  int    `json:"status"`
 	Error   string `json:"error,omitempty"`
 }
+
+type Report struct {
+	Cause  int `json:"cause"`
+}
+
+type ReportResponse struct {
+	Status  int    `json:"status"`
+	Error   string `json:"error,omitempty"`
+}
