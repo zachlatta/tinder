@@ -1,2 +1,2 @@
-# tinder [![Build Status](https://travis-ci.org/norwack/tinder.svg)](https://travis-ci.org/norwack/tinder)
+# tinder [![Travis branch](https://travis-ci.org/norwack/tinder.svg?style=plastic)](https://travis-ci.org/norwack/tinder)
 ======
