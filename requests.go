@@ -166,6 +166,49 @@ func (tinder *Tinder) Report(Id string, Cause string) error {
 	return nil
 }
 
+func (tinder *Tinder) GetUpdates() (UpdatesResponse, error) {
+	var UpdatesEmpty UpdatesResponse
+	UpdatesStruct := &Updates{
+		Limit: 1,
+	}
+	UpdatesData, err := json.Marshal(UpdatesStruct)
+	if err != nil {
+		return UpdatesEmpty, err
+	}
+
+	UpdatesReader := bytes.NewReader(UpdatesData)
+
+	req, err := http.NewRequest("POST", tinder.Host + "/updates", UpdatesReader)
+	if err != nil {
+		return UpdatesEmpty, err
+	}
+
+	req = tinder.SetRequiredHeaders(req)
+	response, err := tinder.Client.Do(req)
+	if err != nil {
+		return UpdatesEmpty, err
+	}
+	defer response.Body.Close()
+
+	data, err := ioutil.ReadAll(response.Body)
+	if err != nil {
+		return UpdatesEmpty, err
+	}
+
+	var UpdatesResp UpdatesResponse
+	err = json.Unmarshal([]byte(data), &UpdatesResp)
+	if err != nil {
+		fmt.Printf("\n%s\n\n", err)
+		return UpdatesEmpty, err
+	}
+
+	if len(UpdatesResp.Error) != 0 {
+		return UpdatesEmpty, errors.New(UpdatesResp.Error)
+	}
+
+	return UpdatesResp, nil
+}
+
 func (tinder *Tinder) SetRequiredHeaders(request *http.Request) *http.Request {
 	request.Header.Set("Content-Type", "application/json; charset=utf-8")
 	request.Header.Set("User-Agent", "Tinder/3.0.4 (iPhone; iOS 7.1; Scale/2.00)")

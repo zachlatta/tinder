@@ -52,3 +52,35 @@ type ReportResponse struct {
 	Status  int    `json:"status"`
 	Error   string `json:"error,omitempty"`
 }
+
+type Updates struct {
+	Limit  int `json:"limit"`
+}
+
+type UpdatesResponse struct {
+	Status  string `json:"status,omitempty"`
+	Error   string `json:"error,omitempty"`
+	Matches  []struct {
+		ID                 string `json:"_id"`
+		CommonFriendCount  int    `json:"common_friend_count"`
+		CommonLikeCount    int    `json:"common_like_count"`
+		MessageCount       int    `json:"message_count"`
+		Messages []struct {
+			ID         string `json:"_id"`
+			MatchID    string `json:"match_id"`
+			To         string `json:"to"`
+			From       string `json:"from"`
+			Message    string `json:"message,omitempty"`
+			Sent       string `json:"sent_date"`
+			Timestamp  int64  `json:"timestamp"`
+		} `json:"messages"`
+		Person struct {
+			ID        string `json:"_id"`
+			Bio       string `json:"bio"`
+			Birth     string `json:"birth_date"`
+			Gender    int    `json:"gender"`
+			Name      string `json:"name"`
+			PingTime  string `json:"ping_time`
+		} `json:"person"`
+	} `json:"matches"`
+}
