@@ -169,7 +169,7 @@ func (tinder *Tinder) Report(Id string, Cause string) error {
 func (tinder *Tinder) GetUpdates() (UpdatesResponse, error) {
 	var UpdatesEmpty UpdatesResponse
 	UpdatesStruct := &Updates{
-		Limit: 1,
+		Limit: 40,
 	}
 	UpdatesData, err := json.Marshal(UpdatesStruct)
 	if err != nil {
