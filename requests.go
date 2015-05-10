@@ -209,6 +209,32 @@ func (tinder *Tinder) GetUpdates() (UpdatesResponse, error) {
 	return UpdatesResp, nil
 }
 
+func (tinder *Tinder) Like(matchId string) (match bool, err error) {
+	req, err := http.NewRequest("GET", fmt.Sprintf("%s/like/%s", tinder.Host, matchId), nil)
+	if err != nil {
+		return false, err
+	}
+
+	req = tinder.SetRequiredHeaders(req)
+	response, err := tinder.Client.Do(req)
+	if err != nil {
+		return false, err
+	}
+	defer response.Body.Close()
+
+	data, err := ioutil.ReadAll(response.Body)
+	if err != nil {
+		return false, err
+	}
+
+	var result SwipeResponse
+	if err := json.Unmarshal([]byte(data), &result); err != nil {
+		return false, err
+	}
+
+	return result.Match, nil
+}
+
 func (tinder *Tinder) SetRequiredHeaders(request *http.Request) *http.Request {
 	request.Header.Set("Content-Type", "application/json; charset=utf-8")
 	request.Header.Set("User-Agent", "Tinder/3.0.4 (iPhone; iOS 7.1; Scale/2.00)")

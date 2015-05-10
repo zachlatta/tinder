@@ -84,3 +84,7 @@ type UpdatesResponse struct {
 		} `json:"person"`
 	} `json:"matches"`
 }
+
+type SwipeResponse struct {
+	Match bool `json:"match"`
+}
