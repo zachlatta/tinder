@@ -3,6 +3,7 @@ package tinder
 import (
 	"net/http"
 	"net/url"
+	"time"
 )
 
 type Tinder struct {
@@ -86,7 +87,9 @@ type UpdatesResponse struct {
 }
 
 type SwipeResponse struct {
-	Match bool `json:"match"`
+	Match bool
+	MatchDetails map[string]interface{}
+	MatchInternal interface{} `json:"match"` // Used to unmarshal
 }
 
 type ProcessedFile struct {
@@ -111,7 +114,7 @@ type Photo struct {
 type Recommendation struct {
 	ID string `json:"_id"`
 	Bio string `json:"bio"`
-	Birth string `json:"birth_date"`
+	Birth time.Time `json:"birth_date"`
 	BirthInfo string `json:"birth_date_info"`
 	Gender int `json:"gender"`
 	Name string `json:"name"`

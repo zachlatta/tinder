@@ -227,10 +227,16 @@ func swipe(tinder *Tinder, recID string, method string) (swipeResp SwipeResponse
 		return swipeResp, err
 	}
 
-	fmt.Println(string(data))
-
 	if err := json.Unmarshal([]byte(data), &swipeResp); err != nil {
 		return swipeResp, err
+	}
+
+	switch v := swipeResp.MatchInternal.(type) {
+	case bool:
+		swipeResp.Match = false
+	case map[string]interface{}:
+		swipeResp.Match = true
+		swipeResp.MatchDetails = v
 	}
 
 	return swipeResp, nil
