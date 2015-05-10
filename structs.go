@@ -88,3 +88,42 @@ type UpdatesResponse struct {
 type SwipeResponse struct {
 	Match bool `json:"match"`
 }
+
+type ProcessedFile struct {
+	Width int `json:"width"`
+	Height int `json:"height"`
+	Url string `json:"url"`
+}
+
+type Photo struct {
+	ID string `json:"photos"`
+	Main interface{} `json:"main"`
+	Crop string `json:"crop"`
+	FileName string `json:"fileName"`
+	Extension string `json:"extension"`
+	YDistancePercent float64 `json:"ydistance_percent"`
+	XDistancePercent float64 `json:"xdistance_percent"`
+	YOffsetPercent float64 `json:"yoffset_percent"`
+	XOffsetPercent float64 `json:"xoffset_percent"`
+	ProcessedFiles []ProcessedFile `json:"processedFiles"`
+}
+
+type Recommendation struct {
+	ID string `json:"_id"`
+	Bio string `json:"bio"`
+	Birth string `json:"birth_date"`
+	BirthInfo string `json:"birth_date_info"`
+	Gender int `json:"gender"`
+	Name string `json:"name"`
+	DistanceInMiles int `json:"distance_mi"`
+	CommonLikeCount int `json:"common_like_count"`
+	CommonFriendCount int `json:"common_friend_count"`
+	PingTime string `json:"ping_time"`
+	Photos []Photo `json:"photos"`
+}
+
+type RecommendationsResponse struct {
+	Status int `json:"status"`
+	Message string `json:"message"`
+	Results []Recommendation `json:"results"`
+}

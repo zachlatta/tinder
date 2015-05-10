@@ -209,30 +209,81 @@ func (tinder *Tinder) GetUpdates() (UpdatesResponse, error) {
 	return UpdatesResp, nil
 }
 
-func (tinder *Tinder) Like(matchId string) (match bool, err error) {
-	req, err := http.NewRequest("GET", fmt.Sprintf("%s/like/%s", tinder.Host, matchId), nil)
+func swipe(tinder *Tinder, recID string, method string) (swipeResp SwipeResponse, err error) {
+	req, err := http.NewRequest("GET", fmt.Sprintf("%s/%s/%s", tinder.Host, method, recID), nil)
 	if err != nil {
-		return false, err
-	}
+		return swipeResp, err
+	} 
 
 	req = tinder.SetRequiredHeaders(req)
 	response, err := tinder.Client.Do(req)
 	if err != nil {
-		return false, err
+		return swipeResp, err
 	}
 	defer response.Body.Close()
 
 	data, err := ioutil.ReadAll(response.Body)
 	if err != nil {
-		return false, err
+		return swipeResp, err
 	}
 
-	var result SwipeResponse
-	if err := json.Unmarshal([]byte(data), &result); err != nil {
-		return false, err
+	fmt.Println(string(data))
+
+	if err := json.Unmarshal([]byte(data), &swipeResp); err != nil {
+		return swipeResp, err
 	}
 
-	return result.Match, nil
+	return swipeResp, nil
+}
+
+func (tinder *Tinder) Like(recID string) (match bool, err error) {
+	swipeResp, err := swipe(tinder, recID, "like")
+	if err != nil {
+		return false, err
+	}
+	return swipeResp.Match, nil
+}
+
+func (tinder *Tinder) Pass(recID string) (error) {
+	_, err := swipe(tinder, recID, "like")
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+func (tinder *Tinder) GetRecommendations() (resp RecommendationsResponse, err error) {
+	req, err := http.NewRequest("GET", tinder.Host + "/user/recs", nil)
+	if err != nil {
+		return resp, err
+	}
+
+	req = tinder.SetRequiredHeaders(req)
+	response, err := tinder.Client.Do(req)
+	if err != nil {
+		return resp, err
+	}
+	defer response.Body.Close()
+
+	data, err := ioutil.ReadAll(response.Body)
+	if err != nil {
+		return resp, err
+	}
+
+	if err = json.Unmarshal([]byte(data), &resp); err != nil {
+		return resp, err
+	}
+
+	fmt.Println(resp)
+
+	if resp.Message == "recs timeout" {
+		return resp, RecsTimeout
+		
+	} else if resp.Message == "recs exhausted"{
+		return resp, RecsExhausted
+	}
+
+	return resp, nil
 }
 
 func (tinder *Tinder) SetRequiredHeaders(request *http.Request) *http.Request {
