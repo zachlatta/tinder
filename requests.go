@@ -302,7 +302,7 @@ func (tinder *Tinder) GetRecommendations() (resp RecommendationsResponse, err er
 }
 
 //SendMessage will send a message to the the given ID.
-func (tinder *Tinder) SendMessage(userID string, message string) {
+func (tinder *Tinder) SendMessage(userID string, message string) error {
 	type empStruct struct {
 		MatchID string `json:"match_ID"`
 		Message string `json:"message"`
@@ -313,40 +313,33 @@ func (tinder *Tinder) SendMessage(userID string, message string) {
 	}
 	RecData, err := json.Marshal(RecStruct)
 	if err != nil {
-		fmt.Println(err)
-		// return RecommendationsResponse{}, err
+		return err
 	}
 
 	RecReader := bytes.NewReader(RecData)
 	req, err := http.NewRequest("POST", tinder.Host+"/user/matches/"+userID, RecReader)
 	if err != nil {
-		// return resp, err
-		fmt.Println(err)
+		return err
 	}
 
 	req = tinder.SetRequiredHeaders(req)
 	response, err := tinder.Client.Do(req)
 	if err != nil {
-		// return resp, err
-		fmt.Println(err)
+		return err
 	}
 	defer response.Body.Close()
 
 	data, err := ioutil.ReadAll(response.Body)
 	if err != nil {
-		// return resp, err
-		fmt.Println(err)
-
+		return err
 	}
 	resp := make(map[string]interface{})
 
 	if err = json.Unmarshal([]byte(data), &resp); err != nil {
-		// return resp, err
-		fmt.Println(err)
+		return err
 	}
 
-	fmt.Println(string(data))
-	// return resp, nil
+	return nil
 }
 
 //SetRequiredHeaders ensures correct HTTP headers are set.
