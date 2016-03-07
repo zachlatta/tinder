@@ -204,7 +204,6 @@ func (tinder *Tinder) GetUpdates() (UpdatesResponse, error) {
 	var UpdatesResp UpdatesResponse
 	err = json.Unmarshal([]byte(data), &UpdatesResp)
 	if err != nil {
-		fmt.Printf("\n%s\n\n", err)
 		return UpdatesEmpty, err
 	}
 
@@ -288,8 +287,6 @@ func (tinder *Tinder) GetRecommendations() (resp RecommendationsResponse, err er
 	if err = json.Unmarshal([]byte(data), &resp); err != nil {
 		return resp, err
 	}
-
-	fmt.Println(resp)
 
 	if resp.Message == "recs timeout" {
 		return resp, RecsTimeout
