@@ -5,18 +5,19 @@ import (
 	"net/url"
 )
 
-func Init(FacebookUserId string, FacebookToken string) *Tinder {
+//Init creates the connection to the API
+func Init(FacebookUserID string, FacebookToken string) *Tinder {
 	Host := "https://api.gotinder.com"
 	Facebook := make(map[string]string)
 	Facebook["facebook_token"] = FacebookToken
-	Facebook["facebook_id"] = FacebookUserId
+	Facebook["facebook_id"] = FacebookUserID
 	Values := &url.Values{}
 	Client := &http.Client{}
 
 	return &Tinder{
-		Host: Host,
+		Host:     Host,
 		Facebook: Facebook,
-		Headers: *Values,
-		Client: *Client,
+		Headers:  *Values,
+		Client:   *Client,
 	}
 }

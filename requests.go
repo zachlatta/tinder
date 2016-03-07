@@ -1,19 +1,20 @@
 package tinder
 
 import (
-	"net/http"
-	"io/ioutil"
-	"encoding/json"
 	"bytes"
+	"encoding/json"
 	"errors"
 	"fmt"
+	"io/ioutil"
+	"net/http"
 )
 
+//Auth authorises the client and initiates the connection.
 func (tinder *Tinder) Auth() error {
 	Headers := tinder.Headers
 	Headers.Add("facebook_token", tinder.Facebook["facebook_token"])
-	Headers.Add("facebook_id", tinder.Facebook["facebook_id"])
-	response, err := http.PostForm(tinder.Host + "/auth", Headers)
+	Headers.Add("facebook_ID", tinder.Facebook["facebook_ID"])
+	response, err := http.PostForm(tinder.Host+"/auth", Headers)
 	if err != nil {
 		return err
 	}
@@ -28,39 +29,41 @@ func (tinder *Tinder) Auth() error {
 		return err
 	}
 	tinder.Headers.Del("facebook_token")
-	tinder.Headers.Del("facebook_id")
+	tinder.Headers.Del("facebook_ID")
 	tinder.Token = me.Token
 	tinder.Me = me
 
 	return nil
 }
 
-func (tinder *Tinder) UpdatePreferences(gender string, min_age int, max_age int, max_distance int, bio string) error {
-	var gender_int int
+//UpdatePreferences allows you to change your preferences for searching.
+func (tinder *Tinder) UpdatePreferences(gender string, minAge int, maxAge int, maxDistance int, bio string) error {
+	var genderInt int
 	switch gender {
-		case "male":
-			gender_int = 0
-		case "female":
-			gender_int = 1
-		default:
-			gender_int = 1
+	case "male":
+		genderInt = 0
+	case "female":
+		genderInt = 1
+	default:
+		genderInt = 1
 	}
-
-	JsonStruct := &Profile{
-		Gender: gender_int,
-		Min_Age: min_age,
-		Max_Age: max_age,
-		Max_Distance: max_distance,
-		Bio: bio,
+	//JSONStruct holds the prefernces to be marshalled to JSON.
+	JSONStruct := &Profile{
+		Gender:      genderInt,
+		MinAge:      minAge,
+		MaxAge:      maxAge,
+		MaxDistance: maxDistance,
+		Bio:         bio,
 	}
-	JsonData, err := json.Marshal(JsonStruct)
+	//JSONData is the encoded JSON of JSONStruct
+	JSONData, err := json.Marshal(JSONStruct)
 	if err != nil {
 		return err
 	}
+	//JSONReader creates a reder to insert into the POST request
+	JSONReader := bytes.NewReader(JSONData)
 
-	JsonReader := bytes.NewReader(JsonData)
-
-	req, err := http.NewRequest("POST", tinder.Host + "/profile", JsonReader)
+	req, err := http.NewRequest("POST", tinder.Host+"/profile", JSONReader)
 	if err != nil {
 		return err
 	}
@@ -74,6 +77,7 @@ func (tinder *Tinder) UpdatePreferences(gender string, min_age int, max_age int,
 	return nil
 }
 
+//Ping takes longitude and latitude and will ping the location.
 func (tinder *Tinder) Ping(lat float32, lon float32) error {
 	GeoStruct := &Geo{
 		Lat: lat,
@@ -86,7 +90,7 @@ func (tinder *Tinder) Ping(lat float32, lon float32) error {
 
 	GeoReader := bytes.NewReader(GeoData)
 
-	req, err := http.NewRequest("POST", tinder.Host + "/user/ping", GeoReader)
+	req, err := http.NewRequest("POST", tinder.Host+"/user/ping", GeoReader)
 	if err != nil {
 		return err
 	}
@@ -114,19 +118,20 @@ func (tinder *Tinder) Ping(lat float32, lon float32) error {
 	return nil
 }
 
-func (tinder *Tinder) Report(Id string, Cause string) error {
-	var Cause_Id int
+//Report will report a userID
+func (tinder *Tinder) Report(ID string, Cause string) error {
+	var CauseID int
 	switch Cause {
-		case "spam":
-			Cause_Id = 1
-		case "offensive":
-			Cause_Id = 2
-		default:
-			return errors.New("Cause can only be spam or offensive")
+	case "spam":
+		CauseID = 1
+	case "offensive":
+		CauseID = 2
+	default:
+		return errors.New("Cause can only be spam or offensive")
 	}
 
 	ReportStruct := &Report{
-		Cause: Cause_Id,
+		Cause: CauseID,
 	}
 
 	ReportData, err := json.Marshal(ReportStruct)
@@ -136,7 +141,7 @@ func (tinder *Tinder) Report(Id string, Cause string) error {
 
 	ReportReader := bytes.NewReader(ReportData)
 
-	req, err := http.NewRequest("POST", tinder.Host + "/report/" + fmt.Sprintf("%s", Id), ReportReader)
+	req, err := http.NewRequest("POST", tinder.Host+"/report/"+fmt.Sprintf("%s", ID), ReportReader)
 	if err != nil {
 		return err
 	}
@@ -166,6 +171,7 @@ func (tinder *Tinder) Report(Id string, Cause string) error {
 	return nil
 }
 
+//GetUpdates finds the latest updates such as new matches and new messages.
 func (tinder *Tinder) GetUpdates() (UpdatesResponse, error) {
 	var UpdatesEmpty UpdatesResponse
 	UpdatesStruct := &Updates{
@@ -178,7 +184,7 @@ func (tinder *Tinder) GetUpdates() (UpdatesResponse, error) {
 
 	UpdatesReader := bytes.NewReader(UpdatesData)
 
-	req, err := http.NewRequest("POST", tinder.Host + "/updates", UpdatesReader)
+	req, err := http.NewRequest("POST", tinder.Host+"/updates", UpdatesReader)
 	if err != nil {
 		return UpdatesEmpty, err
 	}
@@ -198,7 +204,6 @@ func (tinder *Tinder) GetUpdates() (UpdatesResponse, error) {
 	var UpdatesResp UpdatesResponse
 	err = json.Unmarshal([]byte(data), &UpdatesResp)
 	if err != nil {
-		fmt.Printf("\n%s\n\n", err)
 		return UpdatesEmpty, err
 	}
 
@@ -213,7 +218,7 @@ func swipe(tinder *Tinder, recID string, method string) (swipeResp SwipeResponse
 	req, err := http.NewRequest("GET", fmt.Sprintf("%s/%s/%s", tinder.Host, method, recID), nil)
 	if err != nil {
 		return swipeResp, err
-	} 
+	}
 
 	req = tinder.SetRequiredHeaders(req)
 	response, err := tinder.Client.Do(req)
@@ -242,6 +247,7 @@ func swipe(tinder *Tinder, recID string, method string) (swipeResp SwipeResponse
 	return swipeResp, nil
 }
 
+//Like will 'swipe right' on the given ID
 func (tinder *Tinder) Like(recID string) (match bool, err error) {
 	swipeResp, err := swipe(tinder, recID, "like")
 	if err != nil {
@@ -250,7 +256,8 @@ func (tinder *Tinder) Like(recID string) (match bool, err error) {
 	return swipeResp.Match, nil
 }
 
-func (tinder *Tinder) Pass(recID string) (error) {
+//Pass wil 'swipe left' on the given ID
+func (tinder *Tinder) Pass(recID string) error {
 	_, err := swipe(tinder, recID, "like")
 	if err != nil {
 		return err
@@ -258,8 +265,9 @@ func (tinder *Tinder) Pass(recID string) (error) {
 	return nil
 }
 
+//GetRecommendations will get a list of people to like or pass on.
 func (tinder *Tinder) GetRecommendations() (resp RecommendationsResponse, err error) {
-	req, err := http.NewRequest("GET", tinder.Host + "/user/recs", nil)
+	req, err := http.NewRequest("GET", tinder.Host+"/user/recs", nil)
 	if err != nil {
 		return resp, err
 	}
@@ -280,18 +288,58 @@ func (tinder *Tinder) GetRecommendations() (resp RecommendationsResponse, err er
 		return resp, err
 	}
 
-	fmt.Println(resp)
-
 	if resp.Message == "recs timeout" {
 		return resp, RecsTimeout
-		
-	} else if resp.Message == "recs exhausted"{
+
+	} else if resp.Message == "recs exhausted" {
 		return resp, RecsExhausted
 	}
 
 	return resp, nil
 }
 
+//SendMessage will send a message to the the given ID.
+func (tinder *Tinder) SendMessage(userID string, message string) error {
+	type empStruct struct {
+		MatchID string `json:"match_ID"`
+		Message string `json:"message"`
+	}
+	RecStruct := &empStruct{
+		MatchID: userID,
+		Message: message,
+	}
+	RecData, err := json.Marshal(RecStruct)
+	if err != nil {
+		return err
+	}
+
+	RecReader := bytes.NewReader(RecData)
+	req, err := http.NewRequest("POST", tinder.Host+"/user/matches/"+userID, RecReader)
+	if err != nil {
+		return err
+	}
+
+	req = tinder.SetRequiredHeaders(req)
+	response, err := tinder.Client.Do(req)
+	if err != nil {
+		return err
+	}
+	defer response.Body.Close()
+
+	data, err := ioutil.ReadAll(response.Body)
+	if err != nil {
+		return err
+	}
+	resp := make(map[string]interface{})
+
+	if err = json.Unmarshal([]byte(data), &resp); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+//SetRequiredHeaders ensures correct HTTP headers are set.
 func (tinder *Tinder) SetRequiredHeaders(request *http.Request) *http.Request {
 	request.Header.Set("Content-Type", "application/json; charset=utf-8")
 	request.Header.Set("User-Agent", "Tinder/3.0.4 (iPhone; iOS 7.1; Scale/2.00)")
