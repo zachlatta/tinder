@@ -2,7 +2,3 @@
 
 This package (`tinder`) aims to be backwards compatible, so changes will not
 break existing applications using this package.
-
-## Documentation
-
-Will write a decent documentation soon.
